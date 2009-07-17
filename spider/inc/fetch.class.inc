@@ -7,7 +7,7 @@ class gf_fetch{
 	private $time_out = 5;
 	private $cookie = null;
 	private $useragent = null;
-	public function __construct($setting){
+	public function __construct($setting=array()){
 		if ( isset($setting['timeout']) and $setting['timeout']>0)
 		{
 			$this->timeout = intval($setting['timeout']);
@@ -63,9 +63,10 @@ class gf_fetch{
 	 */
 	function get($url,$timeout=null)
 	{
+		sleep(1);
 		if ($timeout == null)
 		{
-			$timeout = $this->timeout;
+			$timeout = $this->time_out;
 		}
 		$ch = curl_init();
 		if(!$ch) {
