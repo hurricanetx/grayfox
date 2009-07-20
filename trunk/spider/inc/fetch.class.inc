@@ -7,6 +7,8 @@ class gf_fetch{
 	private $time_out = 5;
 	private $cookie = null;
 	private $useragent = null;
+	private $header = null;
+	private $referer = null;
 	public function __construct($setting=array()){
 		if ( isset($setting['timeout']) and $setting['timeout']>0)
 		{
@@ -19,6 +21,14 @@ class gf_fetch{
 		if ( isset($setting['useragent']))
 		{
 			$this->useragent = $setting['useragent'];
+		}
+		if ( isset($setting['header']))
+		{
+			$this->header = $setting['header'];
+		}
+		if ( isset($setting['referer']))
+		{
+			$this->referer = $setting['referer'];
 		}
 	}
 	public function __destruct(){}
@@ -79,6 +89,13 @@ class gf_fetch{
 		if ($this->useragent != null) {
 			curl_setopt($ch, CURLOPT_USERAGENT,$this->useragent);
 		}
+		if ($this->header != null) {
+			curl_setopt($ch, CURLOPT_HTTPHEADER,$this->header);
+		}
+		if ($this->referer != null) {
+			curl_setopt($ch, CURLOPT_REFERER,$this->referer);
+		}
+		curl_setopt($ch, CURLOPT_ENCODING, 'gzip,deflate'); 
 		curl_setopt($ch, CURLOPT_HEADER, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
@@ -112,6 +129,13 @@ class gf_fetch{
 		if ($this->useragent != null) {
 			curl_setopt($ch, CURLOPT_USERAGENT,$this->useragent);
 		}
+		if ($this->header != null) {
+			curl_setopt($ch, CURLOPT_HTTPHEADER,$this->header);
+		}
+		if ($this->referer != null) {
+			curl_setopt($ch, CURLOPT_REFERER,$this->referer);
+		}
+		curl_setopt($ch, CURLOPT_ENCODING, 'gzip,deflate'); 
 		curl_setopt($ch, CURLOPT_HEADER, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
