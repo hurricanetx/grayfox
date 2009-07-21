@@ -1,0 +1,22 @@
+#www.morwa.cn
+bbs_url := "http://www.morwa.cn/index.fhtml"
+referer := "http://www.morwa.cn/index.fhtml"
+cookie := "JSESSIONID=6C60B2E90CDF6A32E56EF772F5C05BEE&_eforum_sid=6C60B2E90CDF6A32E56EF772F5C05BEE"
+
+#bbs主页
+bbs_page := fetch(bbs_url)
+board := bbs_page.xpath("tbody/tr[@class='content']")
+board := board.xpath("div[@class='title']/a")
+board_url := board.href
+
+#各版列表页
+board_page := fetch(board_url)
+thread := board_page.xpath("tr[@class='content']/td[@class='td2']/div[@class='topicTitle']/a")
+thread_url := thread.href
+
+#主题页
+thread_page := fetch(thread_url)
+thread_content := thread_page.xpath("td/div[@class=message]")[0]
+print thread_content
+
+

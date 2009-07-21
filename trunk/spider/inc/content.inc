@@ -13,5 +13,6 @@ class grayfox_content{
 		return $xml->xpath($xpath);
 	}
 }
-print_r(grayfox_content::xpath("<c><a><b>11</b></a></c>",'a/b'));
+$a =grayfox_content::xpath("<c><a><b a='1'>11</b></a></c>",'a/b');
+echo $a[0]['a'];
 ?>
