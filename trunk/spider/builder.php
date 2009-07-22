@@ -1,34 +1,95 @@
 <?php
-function parse($string){
-	$rerurn = '';
-	$reserved_words = array('fetch','download','reg','xpath','filesave','dbinsert');
-	$function_call = 0;
-	$line_data = explode(':=',$line,2);
-	if (count($line_data) == 2) {
-		$left = $line_data[0];
-		$right = $line_data[1];
-	}else {
-		$left = '';
-		$right = $line;
-	}
-	$rights = array();
-	$rest = $right;
-	$i = 0;
-	while(!empty($rest)){
-		$rest = trim($rest);
-		if ($rest[0] == '"') {
-			$rest = substr($rest,1);
-			if ($pos = strpos($rest,'"')) {
-				$rights[] = array('type'=>'string','value'=>'"'.substr($rest,0,$pos).'"');
-				$rest = substr($rest,$pos+1);
-			}else {
-				return '';
-			}
-		}elseif (strpos($rest,'fetch') == 0) {
-			$rest = substr($rest,5);
-			$rest = trim($rest);
-			$rights[] = array('type'=>'function','value'=>'"'.substr($rest,0,$pos).'"');
+class grayfox_builder{
+	public static $reserved_words = array('fetch','download','reg','xpath','filesave','dbinsert');
+	public static function parse($string){
+		$rerurn = '';
+		$function_call = 0;
+		$line_data = explode(':=',$line,2);
+		if (count($line_data) == 2) {
+			$left = $line_data[0];
+			$right = $line_data[1];
+		}else {
+			$left = '';
+			$right = $line;
 		}
+		$rights = array();
+		$rest = $right;
+		$last = null;
+		$i = 0;
+		while(!empty($rest)){
+			$rest = trim($rest);
+			if ($rest[0] == '"') {
+				$rest = substr($rest,1);
+				if ($pos = strpos($rest,'"')) {
+					$cc = array('type'=>'string','value'=>'"'.substr($rest,0,$pos).'"','tag'=>0);
+					$rest = substr($rest,$pos+1);
+				}else {
+					return '';
+				}
+			}elseif ($rest[0] == "'") {
+				$rest = substr($rest,1);
+				if ($pos = strpos($rest,"'")) {
+					$cc = array('type'=>'string','value'=>"'".substr($rest,0,$pos)."'",'tag'=>0);
+					$rest = substr($rest,$pos+1);
+				}else {
+					return '';
+				}
+			}elseif (preg_match('/^(fetch|download|reg|xpath|filesave|dbinsert)(\s+|\s*\()/is',$rest,$match)) {
+				$rest = substr($rest,strlen($match[1]));
+				$cc = array('type'=>'function','value'=>$match[1],'args'=>array(),'open'=>0);
+			}elseif (preg_match('/^([_a-zA-Z0-9]+)(\s+|\s*[\(\.])/is',$rest,$match)) {
+				$rest = substr($rest,strlen($match[1]));
+				$cc = array('type'=>'variable','value'=>$match[1],'tag'=>0);
+			}
+			if (($cc['type']=='string'||$cc['type']=='variable')) {
+				if (preg_match('/^\s*\./is',$rest)) {
+					$cc['tag'] = 1;
+					$rest = preg_replace('/^\s*\./is','',$rest);
+				}
+				if (!empty($last)) {
+					if ($last['type']=='variable'&&!empty($last['tag'])) {
+						$cc['type'] = 'variable';
+						$cc['value'] = $last['value']."[{$cc['value']}]";
+						$last = &$cc;
+						continue;
+					}elseif ($last['type']=='function'&&!empty($last['open'])) {
+						$last['args'][] = $cc;
+						if (preg_match('/^\s*\)/is',$rest)) {
+							$last['open'] = 0;
+							$rest = preg_replace('/^\s*\)/is','',$rest);
+						}
+						continue;
+					}else {
+						return '';
+					}
+				}else {
+					if ($cc['type']=='variable') {
+						$cc['value'] = "\${$cc['value']}";
+					}
+					$rights[$i] = $cc;
+					$last = &$rights[$i];
+					$i++;
+				}
+			}
+			if ($cc['type']=='function') {
+				if (preg_match('/^\s*\(?\s*/is',$rest)) {
+					$cc['open'] = 1;
+					$rest = preg_replace('/^\s*\(?\s*/is','',$rest);
+				}
+				if (!empty($last)&&($last['type']=='variable'||$last['type']=='string')&&!empty($last['tag'])) {
+					$cc['args'][] = $last;
+					$last = $cc;
+				}else {
+					$rights[$i] = $cc;
+					$last = &$rights[$i];
+					$i++;
+				}
+			}
+			$rights[] = $cc;
+		}
+	}
+	public static function sub_call(){
+		
 	}
 }
 if ($argc != 2 || in_array($argv[1], array('--help', '-help', '-h', '-?'))) {
