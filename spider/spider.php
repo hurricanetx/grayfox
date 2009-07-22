@@ -1,5 +1,3 @@
 <?php
-require('file.inc');
-require('content.inc');
-
+print_r(getenv('PHP_SELF'));
 ?>
