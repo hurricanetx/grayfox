@@ -16,7 +16,7 @@ thread_url := thread.href
 
 #主题页
 thread_page := fetch(thread_url)
-thread_content := thread_page.xpath("td/div[@class=message]")[0]
+thread_content := thread_page.xpath("td/div[@class='message']")[0]
 print thread_content
 
 
