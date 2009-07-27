@@ -122,9 +122,12 @@ class grayfox_file{
 				$custom_headers = array("Authorization: Basic ".base64_encode($url_parts['user'].':'.$url_parts['pass']));
 			}
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $custom_headers);
-			if($options['referer']) curl_setopt($ch, CURLOPT_REFERER, $options['referer']);
-
-			curl_setopt($ch, CURLOPT_COOKIEJAR, "/tmp/binget-cookie.txt"); //If ever needed...
+			if(!empty($options['referer'])){
+				curl_setopt($ch, CURLOPT_REFERER, $options['referer']);
+			}
+			if(!empty($options['cookie'])) {
+				curl_setopt($ch, CURLOPT_COOKIE,$options['cookie']);
+			}
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 			curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -204,11 +207,12 @@ class grayfox_file{
 		if(empty($options['return_info']))return $body;
 		return array('headers' => $headers, 'body' => $body, 'info' => $info);
 	}
-	public static function download($url,$download_folder=null,$flag=true){
+	public static function download($url,$download_folder=null,$options=array(),$flag=true){
 		if (empty($download_folder)) {
 			$download_folder = self::$download_folder;
 		}
-		$options=array('return_info'=>true,'return_body'=>true);
+		$options['return_info'] = true;
+		$options['return_body'] = true;
 		$file_contents = self::fetch($url,$options);
 		$real_url = !empty($file_contents['info']['url'])?$file_contents['info']['url']:$url;
 		$url_parts = parse_url($real_url);
@@ -216,11 +220,15 @@ class grayfox_file{
 		if (empty($file_name)) {
 			$file_name = uniqid('grayfox');
 		}
-		$file = $localpath.'/'.$file_name;
+		$file = $download_folder.'/'.$file_name;
 		if ($flag) {
 			$file = $file.'.gfd';
 		}
-		file_put_contents($file,$file_contents['body']);
+		if(file_put_contents($file,$file_contents['body'])){
+			return $file_name;
+		}else {
+			return false;
+		}
 	}
 }
 //$url = "http://www.taobao.com/wangwang/download.php";
