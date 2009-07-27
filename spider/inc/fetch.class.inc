@@ -95,7 +95,7 @@ class gf_fetch{
 		if ($this->referer != null) {
 			curl_setopt($ch, CURLOPT_REFERER,$this->referer);
 		}
-		curl_setopt($ch, CURLOPT_ENCODING, 'gzip,deflate'); 
+		curl_setopt($ch, CURLOPT_ENCODING, 'gzip,deflate');
 		curl_setopt($ch, CURLOPT_HEADER, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
@@ -135,7 +135,7 @@ class gf_fetch{
 		if ($this->referer != null) {
 			curl_setopt($ch, CURLOPT_REFERER,$this->referer);
 		}
-		curl_setopt($ch, CURLOPT_ENCODING, 'gzip,deflate'); 
+		curl_setopt($ch, CURLOPT_ENCODING, 'gzip,deflate');
 		curl_setopt($ch, CURLOPT_HEADER, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
@@ -148,4 +148,17 @@ class gf_fetch{
 		return array($status,$data);
 	}
 }
+$custom_headers = array("Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" );
+$custom_headers[] = "Accept-Language: zh-cn,zh;q=0.5" ;
+$custom_headers[] = "Accept-Charset: GB2312,utf-8;q=0.7,*;q=0.7" ;
+$custom_headers[] = "Connection: keep-alive" ;
+$custom_headers[] = "Keep-Alive: 300";
+$setting = array(
+'cookie'=>'JSESSIONID=79F0ACB4F5FC04DE19F0F1277DA0B0F3;_eforum_recent_forums=16E;_eforum_sid=79F0ACB4F5FC04DE19F0F1277DA0B0F3;_eforum_user_auto_login=1;_eforum_user_id=u00000027;_eforum_user_hash=2a39aa07a42e4eb2205f65e1bbcf9301;_eforum_user_mode=1;_eforum_user_visited_topicids=D1021;_eforum_new_forumids18=1248675230121',
+'header'=>$custom_headers,
+'useragent'=>'Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.1) Gecko/20090715 Firefox/3.5.1',
+'referer'=>'http://www.morwa.cn/index.fhtm'
+);
+$f = new gf_fetch($setting);
+print_r($f->get('http://www.morwa.cn/forum.fhtml'));
 ?>

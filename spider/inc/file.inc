@@ -9,6 +9,7 @@ class grayfox_file{
 	'headers'        => array(),
 	'session'        => false,
 	'session_close'    => false,
+	'cookie'=>'',
 	);
 	private static $cache_folder = 'E:/down/cache';
 	private static $download_folder = 'E:/down';
@@ -115,12 +116,17 @@ class grayfox_file{
 			//Set the headers our spiders sends
 			curl_setopt($ch, CURLOPT_USERAGENT, $send_header['User-Agent']); //The Name of the UserAgent we will be using ;)
 			$custom_headers = array("Accept: " . $send_header['Accept'] );
+			$custom_headers[] = "Accept-Language: zh-cn,zh;q=0.5" ;
+			$custom_headers[] = "Accept-Charset: GB2312,utf-8;q=0.7,*;q=0.7" ;
+			$custom_headers[] = "Connection: keep-alive" ;
+			$custom_headers[] = "Keep-Alive: 300";
 			if(isset($options['modified_since'])){
 				array_push($custom_headers,"If-Modified-Since: ".gmdate('D, d M Y H:i:s \G\M\T',strtotime($options['modified_since'])));
 			}
 			if(isset($url_parts['user']) and isset($url_parts['pass'])) {
 				$custom_headers = array("Authorization: Basic ".base64_encode($url_parts['user'].':'.$url_parts['pass']));
 			}
+			print_r($custom_headers);
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $custom_headers);
 			if(!empty($options['referer'])){
 				curl_setopt($ch, CURLOPT_REFERER, $options['referer']);
