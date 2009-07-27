@@ -5,8 +5,8 @@ cookie := "JSESSIONID=6C60B2E90CDF6A32E56EF772F5C05BEE&_eforum_sid=6C60B2E90CDF6
 
 #bbs主页
 bbs_page := fetch(bbs_url)
-board := bbs_page.xpath("tbody/tr[@class='content']")
-board := board.xpath("div[@class='title']/a")
+tboard := bbs_page.xpath("tbody/tr[@class='content']")
+board := tboard.xpath("div[@class='title']/a")
 board_url := board.href
 
 #各版列表页
