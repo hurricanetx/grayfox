@@ -126,7 +126,6 @@ class grayfox_file{
 			if(isset($url_parts['user']) and isset($url_parts['pass'])) {
 				$custom_headers = array("Authorization: Basic ".base64_encode($url_parts['user'].':'.$url_parts['pass']));
 			}
-			print_r($custom_headers);
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $custom_headers);
 			if(!empty($options['referer'])){
 				curl_setopt($ch, CURLOPT_REFERER, $options['referer']);
