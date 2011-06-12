@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Window xmlns:mx="http://www.adobe.com/2006/mxml"
+		   xmlns:ui="com.xProject.ui.*"
+		   xmlns:ui1="com.xProject.ui.*"
+		   visible="true" width="500" height="32" alwaysInFront="true" closing="onClose(event);"
+		   cornerRadius="5" creationComplete="onCreationComplete();" showFlexChrome="false"
+		   systemChrome="none" transparent="true" type="lightweight">
+	<mx:Style>
+		.wtitle {
+			font: 'Arial';
+			font-weight: 'bold';
+			font-size: 12px;
+			color: #FFFFFF;
+		}
+		.hlight {
+			color: #FF7800;
+		}
+		.common {
+			color: #FFFFFF;
+		}
+		.meta {
+			font: 'Arial';
+			font-size: 10px;
+			color: #999999;
+		}
+		.ltitle {
+			font: 'Arial';
+			font-weight: 'bold';
+			font-size: 12px;
+			color: #336699;
+		}
+		.lgreen {
+			font: 'Arial';
+			font-weight: 'bold';
+			font-size: 12px;
+			color: green;
+		}
+		.lorange {
+			font: 'Arial';
+			font-weight: 'bold';
+			font-size: 12px;
+			color: orange;
+		}
+		.lred {
+			font: 'Arial';
+			font-weight: 'bold';
+			font-size: 12px;
+			color: red;
+		}
+	</mx:Style>
+	
+	<mx:Script>
+		<![CDATA[
+			import com.xProject.data.Quest;
+			import com.xProject.events.DBResultEvent;
+			import com.xProject.services.QuestService;
+			import com.xProject.windows.QuestBox;
+			
+			import mx.binding.utils.BindingUtils;
+			import mx.events.CalendarLayoutChangeEvent;
+			import mx.events.FlexEvent;
+			
+			[ArrayElementType("com.xProject.data.Quest")]
+			private var _quests:Array;
+			private var _currentIndex:int = -1;
+			private var _areaBounds:Rectangle;
+			private var _canMove:Boolean = false;
+			private var _questService:QuestService;
+			private var _questBox:QuestBox;
+			private var _quest:Quest;
+			
+			private var _cycleTimer:Timer;
+			private static const CYCLE_DELAY:int = 5000;
+			
+			private var _xDistance:Number = 0;
+			private var _yDistance:Number = 0;
+			
+			private function onCreationComplete():void
+			{
+				_cycleTimer = new Timer( CYCLE_DELAY );
+				_cycleTimer.addEventListener( TimerEvent.TIMER, onTimer );
+				
+				
+				var areaBounds:Rectangle = Screen.mainScreen.visibleBounds;
+				nativeWindow.x = (areaBounds.width - width )/ 2;
+				nativeWindow.y = areaBounds.height - height -2;
+				
+				_questService = new QuestService();
+				_questService.addEventListener( DBResultEvent.QUEST_GET_ALL, onQuestLoad );
+				_questService.addEventListener( DBResultEvent.QUEST_SAVED, onQuestChanged );
+				
+				_questBox = new QuestBox();
+				_questBox.open();
+				
+				_quest = new Quest();
+				
+				invokeService();
+			}
+			
+			private function onClose( evt:Event ):void
+			{
+				_questBox.close();
+			}
+			
+			private function onTimer( evt:TimerEvent ):void
+			{
+				if( currentIndex < quests.length - 1 )
+					currentIndex++;
+				else
+					currentIndex = 0;
+			}
+			
+			private function stopDisplay():void
+			{
+				_cycleTimer.reset();
+			}
+			
+			private function startDisplay():void
+			{
+				currentIndex = 0;
+				_cycleTimer.start();
+			}
+			
+			private function updateQuest():void
+			{
+				if( _quests == null ) return;
+				_quest = _quests[_currentIndex];
+				q_title.text = _quest.title;
+				q_percent.text = '('+_quest.percent + '%)';
+				if(_quest.deadline.length == 0 || _quest.percent >= 100)
+					q_title.styleName = 'title';
+				var pDate:RegExp = /[-: ]/;
+				var now:Number = new Date().time;
+				var dArray:Array = new Array();
+				dArray = _quest.deadline.split(pDate);
+				var dead:Number = new Date(dArray[0],dArray[1]-1,dArray[2],dArray[3],dArray[4],dArray[5],1).time;
+				var timeleft:Number = dead - now;
+				if(timeleft > 1000*60*60*24*2)
+					q_title.styleName = 'lgreen';
+				else if(timeleft > 1000*60*60*24)
+					q_title.styleName = 'lorange';
+				else q_title.styleName = 'lred';
+				_cycleTimer.reset();
+				_cycleTimer.start();
+			}
+			
+			private function onQuestLoad( evt:DBResultEvent ):void
+			{
+				_quests = new Array();
+				var result:SQLResult = evt.result;
+				if(result.data != null){
+					var numResults:int = result.data.length;
+					for(var i:int = 0; i < numResults; i++){
+						var mquest:Quest = new Quest( result.data[i].id, result.data[i].title, result.data[i].description, 
+							result.data[i].start_time, result.data[i].finish_time, result.data[i].deadline, result.data[i].percent );
+						mquest.deserialize();
+						_quests.push(mquest);
+					}
+				}
+				if( _quests.length > 0 )
+				{
+					this.title = '滚动项目列表' + _quests.length;
+					startDisplay();
+				}
+			}
+			private function onQuestChanged( evt:DBResultEvent ):void
+			{
+				setTimeout(invokeService,2000);
+			}
+			
+			private function invokeService( ):void
+			{
+				_questService.getQuests( );
+			}
+			
+			public function mQuest(qId:int = -1):void
+			{
+				//_questBox.questId = qId;
+				_questBox.set_questId(qId,_questService);
+			}
+			
+			public function show():void
+			{
+				visible = true;
+			}
+			
+			public function hide():void
+			{
+				_questBox.hide();
+				visible = false;
+			}
+			
+			public function switch_view():void
+			{
+				if(visible == true)
+					hide();
+				else show();
+			}
+			
+			[Bindable]
+			public function get currentIndex():int
+			{
+				return _currentIndex;
+			}
+			public function set currentIndex( num:int ):void
+			{
+				if(num < 0 || num > quests.length - 1)
+					_currentIndex = 0;
+				else _currentIndex = num;
+				//_currentIndex = Math.max( 0, Math.min( num, quests.length - 1 ) );
+				updateQuest();
+			}
+			
+			[Bindable]
+			public function get quests():Array
+			{
+				return _quests;
+			}
+			public function set quests( arr:Array ):void
+			{
+				_quests = arr;
+			}
+			
+			protected function lb_hlight(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				event.target.styleName = 'hlight';
+			}
+			
+			protected function lb_common(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				event.target.styleName = 'common';
+			}
+			
+		]]>
+	</mx:Script>
+	
+		<mx:HBox id="box_slide" width="100%" height="38" backgroundColor="0x336699"
+				 borderStyle="solid" borderVisible="true" cornerRadius="5" horizontalGap="2"
+				 paddingBottom="5" paddingLeft="5" paddingRight="8" paddingTop="8"
+				 verticalAlign="middle" verticalGap="2">
+			<mx:Label id="lb_rfs" text="刷新" styleName="common" toolTip="" 
+					  mouseOver="lb_hlight(event)" mouseOut="lb_common(event)"
+					  click="{invokeService();}" 
+					  />
+			<mx:Label text="&lt;&lt;" styleName="common" toolTip="" 
+					  mouseOver="lb_hlight(event)" mouseOut="lb_common(event)" 
+					  click="{currentIndex--}" 
+					  />
+			<mx:Text text="{( currentIndex + 1 ) + '/' + quests.length}" styleName="common"
+					 />
+			<mx:Label text="&gt;&gt;" styleName="common" toolTip="" 
+					  mouseOver="lb_hlight(event)" mouseOut="lb_common(event)" 
+					  click="{currentIndex++}" 
+					  />
+			<mx:Text id="q_percent" text="" styleName="meta"
+					 />
+			<mx:Label id="q_title" text="" styleName="ltitle" width="250"
+					  mouseOver="{_cycleTimer.reset();}" 
+					  mouseOut="{_cycleTimer.start();}" 
+					  click="{mQuest(_quest.id);}" 
+					  />
+			<mx:Spacer width="100%" />
+			<mx:Label text="添加项目" styleName="common" toolTip="" 
+					  mouseOver="lb_hlight(event)" mouseOut="lb_common(event)" 
+					  click="{mQuest();}" 
+					  />
+		</mx:HBox>	
+		
+	
+</mx:Window>

@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Window 
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:ui="com.xProject.ui.*"
+	systemChrome="none" showFlexChrome="false"
+	transparent="true"
+	alwaysInFront="true" type="lightweight"
+	visible="false"
+	width="300" height="220" 
+	closing="onClose(event);"
+	creationComplete="onCreationComplete();" xmlns:ui1="com.xProject.ui.*">
+	<mx:Style>
+		.wtitle {
+			font: 'Arial';
+			font-weight: 'bold';
+			font-size: 12px;
+			color: #FFFFFF;
+		}
+		.hlight {
+			color: #FF7800;
+		}
+		.common {
+			color: #FFFFFF;
+		}
+
+	</mx:Style>
+	
+	<mx:Script>
+		<![CDATA[
+			import com.xProject.data.Quest;
+			import com.xProject.events.DBResultEvent;
+			import com.xProject.services.QuestService;
+			import com.xProject.windows.layoutRectangle;
+			import com.xProject.windows.timeSlect;
+			
+			import flashx.textLayout.tlf_internal;
+			
+			import mx.binding.utils.BindingUtils;
+			
+			private var _questId:int;
+			private var _quest:Quest;
+			private var _questService:QuestService;
+			private var _areaBounds:Rectangle;
+			private var _timeSlect:timeSlect;
+			private var _callTimes:int = 0;
+			
+			private var _deadline:String;
+			
+			private function onCreationComplete():void
+			{
+				var areaBounds:Rectangle = Screen.mainScreen.visibleBounds;
+				nativeWindow.x = areaBounds.width - width - 2 - 301;
+				nativeWindow.y = areaBounds.height - height - 2;
+				
+				_timeSlect = new timeSlect();
+				_timeSlect.title = '时间日期选择器';
+				_timeSlect.open();
+			}
+			
+			private function onClose( evt:Event ):void
+			{
+				//evt.preventDefault();
+				_timeSlect.close();
+				//hide();
+			}
+			
+			private function initBox():void
+			{
+				_callTimes++;
+				if(_questId < 0 )
+					this.title = "新增项目";
+				else this.title = "编辑项目 【NO." + _questId + "】";
+				_quest = new Quest();
+				//_questService = new QuestService();
+				_questService.addEventListener( DBResultEvent.QUEST_GET, onQuestLoad );
+				_questService.addEventListener( DBResultEvent.QUEST_SAVED, onQuestSaved );
+				_questService.getQuest(_questId);
+			}
+			
+			private function onQuestLoad(evt:DBResultEvent):void
+			{
+				var result:SQLResult = evt.result;
+				if(result.data != null){
+					var numResults:int = result.data.length;
+					if(numResults > 0){
+						_quest = new Quest( result.data[0].id, result.data[0].title, result.data[0].description, 
+							result.data[0].start_time, result.data[0].finish_time, result.data[0].deadline, result.data[0].percent );
+						_quest.deserialize();
+					}
+				}
+				showQuest();
+			}
+			
+			private function onQuestSaved(evt:DBResultEvent):void
+			{
+				hide();
+			}
+			
+			private function showQuest():void
+			{
+				ipt_title.text = _quest.title;
+				ipt_description.text = _quest.description;
+				if(_quest.start_time == ''){
+					_quest.start_time = formatter.format(new Date());
+				}
+				ipt_start_time.text = _quest.start_time;
+				ipt_finish_time.text = _quest.finish_time;
+				ipt_deadline.text = _quest.deadline;
+				ipt_percent.text = '' + _quest.percent;
+			}
+			
+			private function submitQuest():void
+			{
+				txt_notice.text = '';
+				var pEmpty:RegExp = /(^\s*)|(\s*$)/;
+				var _title:String = ipt_title.text.replace(pEmpty,'');
+				if(_title.length == 0)
+				{
+					txt_notice.text = '名称不能为空';
+					return;
+				}
+				var _description:String = ipt_description.text.replace(pEmpty,'');
+				if(_description.length == 0)
+				{
+					txt_notice.text = '描述不能为空';
+					return;
+				}
+				var _start_time:String = ipt_start_time.text.replace(pEmpty,'');
+				if(_start_time.length == 0){
+					_start_time = formatter.format(new Date());
+				}
+				var _deadline:String = ipt_deadline.text.replace(pEmpty,'');
+				this.title = _deadline;
+				if(_deadline.length == 0){
+					txt_notice.text = '请输入项目截止时间';
+					return;
+				}
+				var _percent:int = int(Number(ipt_percent.text));
+				if(_percent < 0 || _percent > 100){
+					txt_notice.text = '进度是0~100的整数';
+					return;
+				}
+				var _finish_time:String = '';
+				if(_percent == 100){
+					_finish_time = formatter.format(new Date());
+				}
+				
+				var _mquest:Quest = new Quest( _questId, _title, _description, 
+					_start_time, _finish_time, _deadline, _percent );
+				_questService.saveQuest(_mquest);
+				//hide();
+			}
+			public function set_questId( id:int, qService:QuestService):void
+			{
+				_questId = id;
+				_questService = qService;
+				initBox();
+				show();
+			}
+			
+			protected function ipt_deadline_set(event:MouseEvent):void
+			{
+				
+				//_timeSlect.rtobj = event.target;
+				_timeSlect.set_rtobj(ipt_deadline);
+			}
+			
+			public function show():void
+			{
+				visible = true;
+			}
+			
+			public function hide():void
+			{
+				_timeSlect.hide();
+				visible = false;
+			}
+			
+			[Bindable]
+			public function get questId():int
+			{
+				return _questId;
+			}
+			public function set questId( id:int ):void
+			{
+				_questId = id;
+				initBox();
+				show();
+			}
+			
+			
+			
+			protected function lb_hlight(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				event.target.styleName = 'hlight';
+			}
+			
+			protected function lb_common(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				event.target.styleName = 'common';
+			}
+			
+		]]>
+	</mx:Script>
+	<mx:DateFormatter id="formatter" formatString="YYYY-MM-DD HH:NN:SS" />
+	
+	<mx:VBox width="100%" height="100%" 
+			 borderStyle="solid" backgroundColor="0x336699" cornerRadius="5"
+			 paddingLeft="5" paddingRight="5" paddingTop="5" paddingBottom="5">
+		
+		<mx:HBox width="100%" height="20">
+			<mx:Label text="{this.title}" styleName="wtitle"
+					  />
+			<mx:Spacer width="100%" />
+			<mx:Label text="关闭" styleName="common" toolTip="" 
+					  mouseOver="lb_hlight(event)" mouseOut="lb_common(event)"
+					  click="{hide();}" 
+					  />
+		</mx:HBox>
+		<mx:HBox width="100%" height="20">
+			<mx:Label text="名称" 
+					  color="0xFFFFFF"
+					  />
+			<mx:TextInput id="ipt_title" width="220" height="100%" text="" toolTip="填写项目名称"/>
+		</mx:HBox>
+		<mx:HBox width="100%" height="20">
+			<mx:Label text="描述" 
+					  color="0xFFFFFF"
+					  />
+			<mx:TextInput id="ipt_description" width="220" height="100%" text="" toolTip="填写项目摘要"/>
+		</mx:HBox>
+		<mx:HBox width="100%" height="20">
+			<mx:Label text="创建时间" 
+					  color="0xFFFFFF"
+					  />
+			<mx:TextInput id="ipt_start_time" width="196" height="100%" text="" editable="false"/>
+		</mx:HBox>
+		<mx:HBox width="100%" height="20">
+			<mx:Label text="截止时间" 
+					  color="0xFFFFFF"
+					  />
+			<mx:TextInput id="ipt_deadline" width="196" height="100%" text="" click="ipt_deadline_set(event)"/>
+		</mx:HBox>
+		<mx:HBox width="100%" height="20">
+			<mx:Label text="完成时间" 
+					  color="0xFFFFFF"
+					  />
+			<mx:TextInput id="ipt_finish_time" width="196" height="100%" text="" editable="false"/>
+		</mx:HBox>
+		<mx:HBox width="100%" height="20">
+			<mx:Label text="进度%" 
+					  color="0xFFFFFF"
+					  />
+			<mx:TextInput id="ipt_percent" width="208" height="100%" text="" toolTip="项目进度(0~100)"/>
+		</mx:HBox>
+		<mx:HBox width="100%" height="20">
+			<mx:Text id="txt_notice" text="" 
+					 color="0xFF0000" 
+					 />
+			<mx:Spacer width="100%" />
+			<mx:Label text="取消操作" styleName="common" toolTip="" 
+					  mouseOver="lb_hlight(event)" mouseOut="lb_common(event)"
+					  click="{hide();}" 
+					  />
+			<mx:Label text="提交任务" styleName="common" toolTip=""  
+					  mouseOver="lb_hlight(event)" mouseOut="lb_common(event)"
+					  click="{submitQuest();}" 
+					  />
+		</mx:HBox>
+		
+	</mx:VBox>
+	
+	
+</mx:Window>
