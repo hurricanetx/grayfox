@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox 
+    xmlns:mx="http://www.adobe.com/2006/mxml" 
+    width="100%" height="100%"
+    backgroundColor="0xF1F1F1"
+    verticalGap="2" updateComplete="{this.measure()}"
+    paddingLeft="10" paddingRight="10"
+    paddingTop="10" paddingBottom="10">
+
+    <mx:Style>
+        .title {
+            font: 'Arial';
+            font-weight: 'bold';
+            font-size: 12px;
+            color: #336699;
+        }
+        .qdescription {
+            font: 'Arial';
+            font-size: 12px;
+            text-align: 'left';
+			/*text-indent: 22px;*/
+            color: #333333;
+        }
+        .meta {
+            font: 'Arial';
+            font-size: 10px;
+            color: #999999;
+        }
+		.qgreen {
+			font: 'Arial';
+			font-size: 10px;
+			color: green;
+		}
+		.qyellow {
+			font: 'Arial';
+			font-weight: 'bold';
+			font-size: 10px;
+			color: yellow;
+		}
+		.qred {
+			font: 'Arial';
+			font-weight: 'bold';
+			font-size: 10px;
+			color: red;
+		}
+    </mx:Style>
+	<mx:Script>
+		<![CDATA[
+			import mx.binding.utils.BindingUtils;
+			import mx.controls.TextInput;
+			import mx.events.CalendarLayoutChangeEvent;
+			
+			
+			public function deadlineStyle():void
+			{
+				if(data.deadline.length == 0 || data.percent >= 100)
+					txt_deadline.styleName = 'meta';
+				var pDate:RegExp = /[-: ]/;
+				var now:Number = new Date().time;
+				var dArray:Array = new Array();
+				dArray = data.deadline.split(pDate);
+				var dead:Number = new Date(dArray[0],dArray[1]-1,dArray[2],dArray[3],dArray[4],dArray[5],1).time;
+				var timeleft:Number = dead - now;
+				if(timeleft > 1000*60*60*24*2)
+					txt_deadline.styleName = 'qgreen';
+				else if(timeleft > 1000*60*60*24)
+					txt_deadline.styleName = 'qyellow';
+				else txt_deadline.styleName = 'qred';
+			}
+		]]>
+	</mx:Script>
+
+	<mx:HBox width="100%" height="20" verticalAlign="middle">
+		<mx:Text styleName="title"
+				 htmlText="{data.title}"  selectable="false"
+				 buttonMode="true" useHandCursor="true"
+				 />
+		<mx:Text styleName="meta" 
+				 htmlText="{data.percent}%" 
+				 />
+	</mx:HBox>
+    <mx:HBox width="100%" height="15" 
+        verticalAlign="middle">
+		<mx:Text styleName="meta" 
+				 htmlText="创建时间" 
+				 />
+		<mx:Text styleName="meta" 
+				 htmlText="{data.start_time}" 
+				 />
+    </mx:HBox>
+	<mx:HBox width="100%" height="15" 
+			 verticalAlign="middle">
+		<mx:Text styleName="meta" 
+				 htmlText="截止时间" 
+				 />
+		<mx:Text id="txt_deadline" styleName="meta" 
+				 htmlText="{data.deadline}" 
+				 />
+	</mx:HBox>
+    <mx:Text id="description" width="100%" height="100%"
+        styleName="qdescription" truncateToFit="true"
+        htmlText="{data.description}" 
+        />
+</mx:VBox>

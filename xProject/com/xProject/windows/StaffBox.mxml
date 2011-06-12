@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Window 
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:ui="com.xProject.ui.*"
+	systemChrome="none" showFlexChrome="false"
+	transparent="true"
+	alwaysInFront="true" type="lightweight"
+	visible="false"
+	width="300" height="200" 
+	closing="onClose(event);"
+	creationComplete="onCreationComplete();" xmlns:ui1="com.xProject.ui.*">
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.binding.utils.BindingUtils;
+			import com.xProject.data.Staff;
+			
+			[ArrayElementType("com.xProject.data.Staff")]
+			private var _staff:Staff;
+			private var _currentIndex:int = -1;
+			private var _areaBounds:Rectangle;
+			
+			private function onCreationComplete():void
+			{
+				var areaBounds:Rectangle = Screen.mainScreen.bounds;
+				nativeWindow.x = areaBounds.width - width - 10;
+				nativeWindow.y = areaBounds.height - height - 40;
+			}
+			
+			private function onClose( evt:Event ):void
+			{
+				evt.preventDefault();
+				stopDisplay();
+			}
+			
+			private function stopDisplay():void
+			{
+				visible = false;
+			}
+			
+			private function startDisplay():void
+			{
+				visible = true;
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<mx:VBox width="100%" height="100%" 
+			 borderStyle="solid" backgroundColor="0x336699" cornerRadius="5"
+			 paddingLeft="5" paddingRight="5" paddingTop="5" paddingBottom="5">
+		
+		<mx:Label text="成员编辑" color="0xFFFFFF" />
+		<ui:Staff id="staff" 
+				 width="100%" height="100%"
+				 />
+		<mx:HBox width="100%" height="20">
+			<mx:Label text="&lt;&lt;" 
+					  color="0xFFFFFF" 
+					  />
+			<mx:Text text="1111" 
+					 color="0xFFFFFF" 
+					 />
+			<mx:Label text="&gt;&gt;" 
+					  color="0xFFFFFF" 
+					  />
+			<mx:Spacer width="100%" />
+			<mx:Label text="close" 
+					  color="0xFFFFFF" 
+					  click="{stopDisplay();}" 
+					  />
+		</mx:HBox>
+		
+	</mx:VBox>
+	
+</mx:Window>

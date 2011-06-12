@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:WindowedApplication 
+	xmlns:mx="http://www.adobe.com/2006/mxml" 
+	xmlns:ui="com.xProject.ui.*"
+	layout="absolute" visible="false"
+	backgroundColor="0xFFFFFF"
+	applicationComplete="onAppComplete();" 
+	closing="onAppClosing();">
+	
+	<mx:Script>
+		<![CDATA[
+			import com.xProject.windows.layoutLine;
+			import com.xProject.windows.layoutRectangle;
+			
+			import mx.binding.utils.BindingUtils;
+			import mx.collections.ArrayCollection;
+			import mx.core.Window;
+			import mx.events.FlexEvent;
+			
+			private var _layout:Window;
+			
+			[Embed(source='/images/AIRApp_16.png')]
+			private var dockIcon:Class;
+			
+			private static const WTYPE_RECTANGLE:String = 'WTYPE_RECTANGLE'; 
+			private static const WTYPE_LINE:String = 'WTYPE_LINE'; 
+			private static const WTYPE_LIST:String = 'WTYPE_LIST'; 
+			
+			private var _wtype:String = '';
+			private var _shellMenu:NativeMenu;
+			
+			private function onAppComplete():void
+			{
+				this.includeInLayout = false;
+				
+				_layout = new layoutRectangle();
+				_layout.open();
+				_wtype = WTYPE_RECTANGLE;
+				
+				setAvailableMenu();
+			}
+			
+			private function onAppClosing():void
+			{
+				NativeApplication.nativeApplication.exit();
+			}
+			
+			private function setAvailableMenu():void
+			{
+				var tip:String = "xProject";
+				_shellMenu = new NativeMenu();
+				_shellMenu.addItem( new NativeMenuItem( "大面板" ) );
+				_shellMenu.addItem( new NativeMenuItem( "小面板" ) );
+				_shellMenu.addItem( new NativeMenuItem( "列表面板" ) );
+				_shellMenu.addItem( new NativeMenuItem( "显示/隐藏浮动框" ) );
+				_shellMenu.addItem( new NativeMenuItem( "随机启动" ) );
+				_shellMenu.addItem( new NativeMenuItem( "设置" ) );
+				_shellMenu.addItem( new NativeMenuItem( "关于xProject" ) );
+				_shellMenu.addItem( new NativeMenuItem( "请我吃饭" ) );
+				_shellMenu.addItem( new NativeMenuItem( "退出xProjec" ) );
+				_shellMenu.addEventListener( Event.SELECT, onShellMenuSelect );
+				switch( _wtype )
+				{
+					case WTYPE_RECTANGLE:
+						_shellMenu.items[0].label = '大面板 √';
+						break;
+					case WTYPE_LINE:
+						_shellMenu.items[1].label = '小面板 √';
+						break;
+					case WTYPE_LIST:
+						_shellMenu.items[2].label = '列表面板 √';
+						break;
+					default:
+						break;
+				}
+				if(NativeApplication.nativeApplication.startAtLogin)
+					_shellMenu.items[4].label = '随机启动 √';
+				setMenu( _shellMenu, tip );
+			}
+			
+			private function setMenu( menu:NativeMenu, tip:String ):void
+			{
+				var app:NativeApplication = NativeApplication.nativeApplication;
+				if( NativeApplication.supportsDockIcon )
+				{
+					// Mac OSX
+					( app.icon as DockIcon ).menu = menu;
+				}
+				else
+				{
+					( app.icon as SystemTrayIcon ).menu = menu;
+					( app.icon as SystemTrayIcon ).tooltip = tip;
+				}
+				app.icon.bitmaps = [( new dockIcon() ).bitmapData];
+				app.icon.addEventListener(MouseEvent.CLICK,onActiave);
+			}
+			
+			private function switchView():void
+			{
+				switch( _wtype )
+				{
+					case WTYPE_RECTANGLE:
+						(_layout as layoutRectangle).switch_view();
+						break;
+					case WTYPE_LINE:
+						(_layout as layoutLine).switch_view();
+						break;
+					case WTYPE_LIST:
+						//_layout.close();
+						break;
+					default:
+						break;
+				}
+			}
+			
+			private function setAutoStart():void
+			{
+				if(NativeApplication.nativeApplication.startAtLogin){
+					try{
+						NativeApplication.nativeApplication.startAtLogin = false;
+						_shellMenu.items[4].label = '随机启动';
+					}catch (error:Error) {
+						//trace("Can't set in adl.");
+					}
+				}else{
+					try{
+						NativeApplication.nativeApplication.startAtLogin = true;
+						_shellMenu.items[4].label = '随机启动 √';
+					}catch (error:Error) {
+						//trace("Can't set in adl.");
+					}
+				}
+			}
+			
+			private function switchRectangle():void
+			{
+				if(_wtype != WTYPE_RECTANGLE)
+				{
+					_layout.close();
+					_layout = new layoutRectangle();
+					_layout.open();
+					_wtype = WTYPE_RECTANGLE;
+					_shellMenu.items[0].label = '大面板 √';
+					_shellMenu.items[1].label = '小面板';
+					_shellMenu.items[2].label = '列表面板';
+				}
+			}
+			
+			private function switchLine():void
+			{
+				if(_wtype != WTYPE_LINE)
+				{
+					_layout.close();
+					_layout = new layoutLine();
+					_layout.open();
+					_wtype = WTYPE_LINE;
+					_shellMenu.items[0].label = '大面板';
+					_shellMenu.items[1].label = '小面板 √';
+					_shellMenu.items[2].label = '列表面板';
+				}
+			}
+			
+			private function onActiave(evt:Event):void
+			{
+				switchView();
+			}
+			
+			private function onShellMenuSelect( evt:Event ):void
+			{
+				var coll:ArrayCollection =
+					new ArrayCollection( evt.target.menu.items );
+				var index:int = coll.getItemIndex( evt.target );
+				switch( index )
+				{
+					case 0:
+						switchRectangle();
+						break;
+					case 1:
+						switchLine();
+						break;
+					case 2:
+						//_layout.close();
+						break;
+					case 3:
+						switchView();
+						break;
+					case 4:
+						setAutoStart();
+						break;
+					case 5:
+						//设置
+						break;
+					case 6:
+						navigateToURL( new URLRequest( 
+							"http://xproject.wangchao.name/about/" ) );
+						break;
+					case 7:
+						navigateToURL( new URLRequest(
+							"http://item.taobao.com/item.htm?id=10683308345" ) );
+						break;
+					case 8:
+						_layout.close();
+						close();
+						break;
+					default:
+						//var quest:Quest = new Quest( );
+						//_questService.saveQuest(quest );
+						break;
+				}
+			}           
+		]]>
+	</mx:Script>
+	
+</mx:WindowedApplication>
