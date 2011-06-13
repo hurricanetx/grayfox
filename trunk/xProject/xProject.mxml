@@ -207,7 +207,11 @@
 						//_questService.saveQuest(quest );
 						break;
 				}
-			}           
+			}
+			public function tip():void
+			{
+				
+			}
 		]]>
 	</mx:Script>
 	
