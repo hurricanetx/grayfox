@@ -1,0 +1,11 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+
+mx|Text
+{
+	fontFamily: "中易宋体";
+	fontSize: 13;
+}
+	

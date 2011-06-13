@@ -36,7 +36,7 @@ package com.xProject.net
 		}
 		
 		private function _server_connectHandler(event:ServerSocketConnectEvent):void{
-			ClientConnection.addChatClientConnection(new ClientConnection(event.socket));
+			ClientConnection.addClientConnection(new ClientConnection(event.socket));
 		}
 	}
 }

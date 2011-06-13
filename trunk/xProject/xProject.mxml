@@ -6,11 +6,13 @@
 	backgroundColor="0xFFFFFF"
 	applicationComplete="onAppComplete();" 
 	closing="onAppClosing();">
+	<mx:Style source="xProject.css"/>
 	
 	<mx:Script>
 		<![CDATA[
 			import com.xProject.windows.layoutLine;
 			import com.xProject.windows.layoutRectangle;
+			import com.xProject.windows.Notice;
 			
 			import mx.binding.utils.BindingUtils;
 			import mx.collections.ArrayCollection;
@@ -18,6 +20,7 @@
 			import mx.events.FlexEvent;
 			
 			private var _layout:Window;
+			private static var _notice:Notice;
 			
 			[Embed(source='/images/AIRApp_16.png')]
 			private var dockIcon:Class;
@@ -36,6 +39,9 @@
 				_layout = new layoutRectangle();
 				_layout.open();
 				_wtype = WTYPE_RECTANGLE;
+				
+				_notice = new Notice();
+				_notice.open();
 				
 				setAvailableMenu();
 			}
@@ -73,8 +79,8 @@
 					default:
 						break;
 				}
-				if(NativeApplication.nativeApplication.startAtLogin)
-					_shellMenu.items[4].label = '随机启动 √';
+				//if(NativeApplication.nativeApplication.startAtLogin)
+				//	_shellMenu.items[4].label = '随机启动 √';
 				setMenu( _shellMenu, tip );
 			}
 			
@@ -185,7 +191,7 @@
 						switchView();
 						break;
 					case 4:
-						setAutoStart();
+						//setAutoStart();
 						break;
 					case 5:
 						//设置
@@ -208,9 +214,11 @@
 						break;
 				}
 			}
-			public function tip():void
+			
+			public static function tip(tip:String):void
 			{
-				
+				_notice.data = tip;
+				_notice.show();
 			}
 		]]>
 	</mx:Script>
