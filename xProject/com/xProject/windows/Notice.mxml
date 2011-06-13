@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Window 
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	systemChrome="none" showFlexChrome="false"
+	transparent="true"
+	alwaysInFront="true" type="lightweight"
+	visible="false"
+	width="248" height="38" 
+	creationComplete="onCreationComplete();">
+	
+	<mx:Script>
+		<![CDATA[
+			private var _cycleTimer:Timer;
+			private static const CYCLE_DELAY:int = 5000;
+			
+			private function onCreationComplete():void
+			{
+				_cycleTimer = new Timer( CYCLE_DELAY );
+				_cycleTimer.addEventListener( TimerEvent.TIMER, onTimer );
+				
+				var areaBounds:Rectangle = Screen.mainScreen.visibleBounds;
+				nativeWindow.x = 2;
+				nativeWindow.y = areaBounds.height - height -2;
+			}
+			
+			private function onTimer( evt:TimerEvent ):void
+			{
+				hide();
+			}
+			
+			public function show():void
+			{
+				_cycleTimer.reset();
+				_cycleTimer.start();
+				visible = true;
+			}
+			
+			public function hide():void
+			{
+				_cycleTimer.reset();
+				visible = false;
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<mx:HBox width="100%" height="100%" backgroundColor="0x336699" borderStyle="solid"
+			 borderVisible="true" cornerRadius="5" dropShadowVisible="true" horizontalAlign="center"
+			 paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5"
+			 verticalAlign="middle">
+		<mx:Text color="#FFFFFF" fontFamily="中易宋体" fontSize="18" fontWeight="bold" text="{data}"/>
+	</mx:HBox>	
+	
+</mx:Window>

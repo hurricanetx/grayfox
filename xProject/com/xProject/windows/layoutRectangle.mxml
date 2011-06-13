@@ -229,6 +229,10 @@
 					  mouseOver="lb_hlight(event)" mouseOut="lb_common(event)" 
 					  click="{currentIndex++}" 
 					  />
+			<mx:Label text="test" styleName="common" toolTip="" 
+					  mouseOver="lb_hlight(event)" mouseOut="lb_common(event)" 
+					  click="{xProject.tip('test');}" 
+					  />
 			<mx:Spacer width="100%" />
 			<mx:Label text="添加项目" styleName="common" toolTip="" 
 					  mouseOver="lb_hlight(event)" mouseOut="lb_common(event)" 
